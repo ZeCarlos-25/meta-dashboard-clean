@@ -26,14 +26,23 @@ export default function DashboardMetaAds() {
         .then((data) => {
           const json = JSON.parse(data.substring(47).slice(0, -2));
           const linhas = json.table.rows.map((row) => {
+            const getValue = (i) => row.c[i]?.v ?? "";
+
+            // Corrigir data (caso venha como objeto)
+            let dataFormatada = getValue(0);
+            if (typeof dataFormatada === "object") {
+              const dateObj = new Date(dataFormatada);
+              dataFormatada = dateObj.toLocaleDateString("pt-BR");
+            }
+
             return {
-              DATA: row.c[0]?.v || "",
-              NOME: row.c[1]?.v || "",
-              TIPO: row.c[2]?.v || "",
-              CPM: parseFloat(row.c[3]?.v || 0),
-              CPC: parseFloat(row.c[4]?.v || 0),
-              CTR: parseFloat(row.c[5]?.v || 0),
-              ROAS: parseFloat(row.c[6]?.v || 0),
+              DATA: dataFormatada,
+              NOME: getValue(1),
+              TIPO: getValue(2),
+              CPM: parseFloat(getValue(3)) || 0,
+              CPC: parseFloat(getValue(4)) || 0,
+              CTR: parseFloat(getValue(5)) || 0,
+              ROAS: parseFloat(getValue(6)) || 0,
             };
           });
           setDados(linhas);
@@ -75,16 +84,18 @@ export default function DashboardMetaAds() {
       </button>
       <button onClick={exportarCSV}>Exportar CSV</button>
       <button onClick={exportarPDF}>Gerar PDF</button>
+
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={dados}>
           <XAxis dataKey="DATA" />
           <YAxis />
           <Tooltip />
           <CartesianGrid stroke="#ccc" />
-          <Line type="monotone" dataKey="ROAS" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="CPC" stroke="#8884d8" />
+          <Line type="monotone" dataKey="ROAS" stroke="#82ca9d" name="ROAS" />
+          <Line type="monotone" dataKey="CPC" stroke="#8884d8" name="CPC" />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 }
+

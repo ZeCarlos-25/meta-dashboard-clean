@@ -17,33 +17,26 @@ export default function DashboardMetaAds() {
   const printRef = useRef();
 
   const urlPlanilha =
-    "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:csv";
+    "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:json";
 
   useEffect(() => {
     if (!modoDemo) {
       fetch(urlPlanilha)
         .then((res) => res.text())
         .then((data) => {
-          const linhas = data.trim().split("\n").slice(1);
-          const resultado = linhas
-            .map((linha) => {
-              const colunas = linha.split(",");
-              if (colunas.length < 3) return null;
-              const [DATA, ROAS, CPC] = colunas;
-              return {
-                DATA,
-                ROAS: parseFloat(ROAS),
-                CPC: parseFloat(CPC),
-              };
-            })
-            .filter(
-              (item) =>
-                item &&
-                !isNaN(item.ROAS) &&
-                !isNaN(item.CPC) &&
-                item.DATA !== ""
-            );
-          setDados(resultado);
+          const json = JSON.parse(data.substring(47).slice(0, -2));
+          const linhas = json.table.rows.map((row) => {
+            return {
+              DATA: row.c[0]?.v || "",
+              NOME: row.c[1]?.v || "",
+              TIPO: row.c[2]?.v || "",
+              CPM: parseFloat(row.c[3]?.v || 0),
+              CPC: parseFloat(row.c[4]?.v || 0),
+              CTR: parseFloat(row.c[5]?.v || 0),
+              ROAS: parseFloat(row.c[6]?.v || 0),
+            };
+          });
+          setDados(linhas);
         });
     } else {
       setDados([

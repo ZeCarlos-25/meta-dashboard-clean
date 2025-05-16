@@ -18,7 +18,7 @@ export default function DashboardMetaAds() {
   const printRef = useRef();
 
   const urlPlanilha =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbZqE6uLSf8aNNrkmpeSv8FCTNNcm1qbtrFYRL-Xt11pQNhscf7Wz7Npbt64DZk09bFtnQL7FJjUt/pub?output=csv";
+ "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:json";
 
 
   useEffect(() => {

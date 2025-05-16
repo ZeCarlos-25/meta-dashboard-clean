@@ -26,26 +26,29 @@ export default function DashboardMetaAds() {
         .then((data) => {
           const json = JSON.parse(data.substring(47).slice(0, -2));
           const linhas = json.table.rows.map((row) => {
-            const getValue = (i) => row.c[i]?.v ?? "";
+            const getVal = (i) => row.c[i]?.v ?? "";
 
-            // Corrigir data (caso venha como objeto)
-            let dataFormatada = getValue(0);
-            if (typeof dataFormatada === "object") {
-              const dateObj = new Date(dataFormatada);
-              dataFormatada = dateObj.toLocaleDateString("pt-BR");
+            let rawData = getVal(0);
+            let dataFormatada = rawData;
+
+            // Corrige a data se vier como objeto
+            if (typeof rawData === "object" && rawData !== null) {
+              const d = new Date(rawData);
+              dataFormatada = d.toLocaleDateString("pt-BR").slice(0, 5); // Ex: 15/05
             }
 
             return {
               DATA: dataFormatada,
-              NOME: getValue(1),
-              TIPO: getValue(2),
-              CPM: parseFloat(getValue(3)) || 0,
-              CPC: parseFloat(getValue(4)) || 0,
-              CTR: parseFloat(getValue(5)) || 0,
-              ROAS: parseFloat(getValue(6)) || 0,
+              NOME: getVal(1),
+              TIPO: getVal(2),
+              CPM: parseFloat(getVal(3)?.toString().replace(",", ".")) || 0,
+              CPC: parseFloat(getVal(4)?.toString().replace(",", ".")) || 0,
+              CTR: parseFloat(getVal(5)?.toString().replace(",", ".")) || 0,
+              ROAS: parseFloat(getVal(6)?.toString().replace(",", ".")) || 0,
             };
           });
-          setDados(linhas);
+
+          setDados(linhas.filter((item) => item.DATA && item.ROAS));
         });
     } else {
       setDados([
@@ -84,7 +87,6 @@ export default function DashboardMetaAds() {
       </button>
       <button onClick={exportarCSV}>Exportar CSV</button>
       <button onClick={exportarPDF}>Gerar PDF</button>
-
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={dados}>
           <XAxis dataKey="DATA" />
@@ -98,4 +100,5 @@ export default function DashboardMetaAds() {
     </div>
   );
 }
+
 

@@ -24,17 +24,16 @@ export default function DashboardMetaAds() {
       fetch(urlPlanilha)
         .then((res) => res.text())
         .then((data) => {
-          const json = JSON.parse(data.substring(47).slice(0, -2));
-          const linhas = json.table.rows.map((row) => {
+          const jsonData = JSON.parse(data.substring(47).slice(0, -2));
+          const linhas = jsonData.table.rows.map((row) => {
             const getVal = (i) => row.c[i]?.v ?? "";
 
             let rawData = getVal(0);
             let dataFormatada = rawData;
 
-            // Corrige a data se vier como objeto
             if (typeof rawData === "object" && rawData !== null) {
               const d = new Date(rawData);
-              dataFormatada = d.toLocaleDateString("pt-BR").slice(0, 5); // Ex: 15/05
+              dataFormatada = d.toLocaleDateString("pt-BR").slice(0, 5);
             }
 
             return {
@@ -61,8 +60,12 @@ export default function DashboardMetaAds() {
   }, [modoDemo]);
 
   const exportarCSV = () => {
-    const csv = ["DATA,ROAS,CPC"];
-    dados.forEach((d) => csv.push(`${d.DATA},${d.ROAS},${d.CPC}`));
+    const csv = ["DATA,NOME,TIPO,CPM,CPC,CTR,ROAS"];
+    dados.forEach((d) =>
+      csv.push(
+        `${d.DATA},${d.NOME},${d.TIPO},${d.CPM},${d.CPC},${d.CTR},${d.ROAS}`
+      )
+    );
     const blob = new Blob([csv.join("\n")], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -93,12 +96,10 @@ export default function DashboardMetaAds() {
           <YAxis />
           <Tooltip />
           <CartesianGrid stroke="#ccc" />
-          <Line type="monotone" dataKey="ROAS" stroke="#82ca9d" name="ROAS" />
-          <Line type="monotone" dataKey="CPC" stroke="#8884d8" name="CPC" />
+          <Line type="monotone" dataKey="ROAS" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="CPC" stroke="#8884d8" />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 }
-
-

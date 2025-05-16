@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import {
   LineChart,
@@ -18,28 +17,33 @@ export default function DashboardMetaAds() {
   const printRef = useRef();
 
   const urlPlanilha =
- "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:json";
-
+    "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:csv";
 
   useEffect(() => {
     if (!modoDemo) {
       fetch(urlPlanilha)
         .then((res) => res.text())
         .then((data) => {
-          const linhas = data.split("\n").slice(1);
-          const resultado = linhas.map((linha) => {
-            const [DATA, NOME, TIPO, CPM, CPC, CTR, ROAS] = linha.split(",");
-            return {
-              DATA,
-              NOME,
-              TIPO,
-              CPM: parseFloat(CPM),
-              CPC: parseFloat(CPC),
-              CTR: parseFloat(CTR),
-              ROAS: parseFloat(ROAS),
-            };
-          });
-          setDados(resultado.filter((item) => !isNaN(item.ROAS)));
+          const linhas = data.trim().split("\n").slice(1);
+          const resultado = linhas
+            .map((linha) => {
+              const colunas = linha.split(",");
+              if (colunas.length < 3) return null;
+              const [DATA, ROAS, CPC] = colunas;
+              return {
+                DATA,
+                ROAS: parseFloat(ROAS),
+                CPC: parseFloat(CPC),
+              };
+            })
+            .filter(
+              (item) =>
+                item &&
+                !isNaN(item.ROAS) &&
+                !isNaN(item.CPC) &&
+                item.DATA !== ""
+            );
+          setDados(resultado);
         });
     } else {
       setDados([

@@ -17,37 +17,31 @@ export default function DashboardMetaAds() {
   const printRef = useRef();
 
   const urlPlanilha =
-    "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:json";
+    "https://docs.google.com/spreadsheets/d/1QGZSa7wn4uvgKcFAdfYc2zmfRRcWlRGJV1NKxl-O6-0/gviz/tq?tqx=out:csv";
 
   useEffect(() => {
     if (!modoDemo) {
       fetch(urlPlanilha)
         .then((res) => res.text())
         .then((data) => {
-          const jsonData = JSON.parse(data.substring(47).slice(0, -2));
-          const linhas = jsonData.table.rows.map((row) => {
-            const getVal = (i) => row.c[i]?.v ?? "";
-
-            let rawData = getVal(0);
-            let dataFormatada = rawData;
-
-            if (typeof rawData === "object" && rawData !== null) {
-              const d = new Date(rawData);
-              dataFormatada = d.toLocaleDateString("pt-BR").slice(0, 5);
-            }
-
-            return {
-              DATA: dataFormatada,
-              NOME: getVal(1),
-              TIPO: getVal(2),
-              CPM: parseFloat(getVal(3)?.toString().replace(",", ".")) || 0,
-              CPC: parseFloat(getVal(4)?.toString().replace(",", ".")) || 0,
-              CTR: parseFloat(getVal(5)?.toString().replace(",", ".")) || 0,
-              ROAS: parseFloat(getVal(6)?.toString().replace(",", ".")) || 0,
-            };
-          });
-
-          setDados(linhas.filter((item) => item.DATA && item.ROAS));
+          const linhas = data.split("\n").slice(1);
+          const resultado = linhas
+            .map((linha) => {
+              const colunas = linha.split(",");
+              if (colunas.length < 7) return null;
+              const [DATA, NOME, TIPO, CPM, CPC, CTR, ROAS] = colunas;
+              return {
+                DATA: DATA.trim(),
+                NOME: NOME.trim(),
+                TIPO: TIPO.trim(),
+                CPM: parseFloat(CPM),
+                CPC: parseFloat(CPC),
+                CTR: parseFloat(CTR),
+                ROAS: parseFloat(ROAS),
+              };
+            })
+            .filter((item) => item && !isNaN(item.CPC) && !isNaN(item.ROAS));
+          setDados(resultado);
         });
     } else {
       setDados([
@@ -60,12 +54,8 @@ export default function DashboardMetaAds() {
   }, [modoDemo]);
 
   const exportarCSV = () => {
-    const csv = ["DATA,NOME,TIPO,CPM,CPC,CTR,ROAS"];
-    dados.forEach((d) =>
-      csv.push(
-        `${d.DATA},${d.NOME},${d.TIPO},${d.CPM},${d.CPC},${d.CTR},${d.ROAS}`
-      )
-    );
+    const csv = ["DATA,ROAS,CPC"];
+    dados.forEach((d) => csv.push(`${d.DATA},${d.ROAS},${d.CPC}`));
     const blob = new Blob([csv.join("\n")], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
